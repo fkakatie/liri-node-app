@@ -20,6 +20,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "bandsintown": "^1.0.1",
+    "chalk": "^2.4.2",
     "dotenv": "^6.2.0",
     "moment": "^2.23.0",
     "node-spotify-api": "^1.0.7",
