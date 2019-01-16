@@ -13,6 +13,7 @@ var keys = require('./keys.js');
 var chalk = require('chalk');
 
 var request = require('request');
+var axios = require('axios')
 var fs = require('fs');
 var moment = require('moment');
 
@@ -22,7 +23,7 @@ var Omdb = require('omdb');
 
 // chalk setup
 var invalid = chalk.red;
-var title = chalk.blue;
+var heading = chalk.blue;
 var divider = chalk.gray;
 var inverse = chalk.inverse;
 
@@ -40,10 +41,10 @@ var command = {
         
         var artist = userInput;
         
-        var artistSplit = userInput.split('');
+        // replacing any special characters
+        var artistSplit = artist.split('');
   
         for (var i = 0; i < artistSplit.length; i++) {
-            // replacing any special characters
             switch (artistSplit[i]) {
             case '/':
                 artistSplit[i] = '%252F';
@@ -66,18 +67,18 @@ var command = {
 
         artistSplit = artistSplit.join('');
         
-        request('https://rest.bandsintown.com/artists/' + artistSplit + '/events?app_id=' + keys.bandsintown + '&date=upcoming', function (error, response, bandData) {
+        request('https://rest.bandsintown.com/artists/' + artistSplit + '/events?app_id=' + keys.bandsintown.id + '&date=upcoming', function (error, response, bandData) {
+            
             // catch errors
             if (error || response.statusCode !== 200) {
                 return console.log(invalid(error));
             } 
 
             if (bandData.length > 3) {
-
-                // Print the HTML for the Google homepage.
+                // convert bandData to JSON object
                 var bandData = JSON.parse(bandData);
 
-                console.log(title('\nUPCOMING ' + chalk.bold(artist.toUpperCase()) + ' CONCERTS:'));
+                console.log(heading('\nUPCOMING ' + chalk.bold(artist.toUpperCase()) + ' CONCERTS:'));
                 console.log(divider(divLine));
 
                 for (var j = 0; j < 5; j++) {
@@ -110,13 +111,52 @@ var command = {
     },
     // search OMDB for movie info
     movie: function() {
-        console.log('title');
-        console.log('year');
-        console.log('country');
-        console.log('language');
-        console.log('imdb rating | rotten tomatoes rating');
-        console.log('plot');
-        console.log('cast');
+
+        var title = userInput;
+                
+        var titleSplit = title.split(' ').join('+');
+
+        axios.get('http://www.omdbapi.com/?apikey=' + keys.omdb.id + '&t=' + titleSplit)
+            .then(function (movieData) {
+
+                if (movieData.Title) {
+
+                var movie = movieData.data;
+
+                console.log(
+                    '\n' + heading(movie.Title.toUpperCase()) + 
+                    divider(' (' + movie.Year + ')'));
+                console.log(movie.Plot);
+
+                console.log(divider(divLine + divLine));
+
+                console.log(divider('STARRING: ') + movie.Actors);
+                console.log(divider('PRODUCED IN: ') + movie.Country);
+                console.log(divider('LANGUAGE(S): ') + movie.Language);
+
+                if (movie.Ratings[1] && movie.Ratings[0]) {
+                    console.log(divider('RATINGS: ') + 'Rotten Tomatoes: ' + 
+                        movie.Ratings[1].Value + 
+                        divider(' | ') + 
+                        'IMDb: ' + movie.Ratings[0].Value);
+                } else if (movie.Ratings[1]) {
+                    console.log(
+                        divider('RATING: ') + 'Rotten Tomatoes: ' + 
+                        movie.Ratings[1].Value);
+                } else if (movie.Ratings[0]) {
+                    console.log(
+                        divider('RATING: ') + 'IMDb: ' + movie.Ratings[0].Value);
+                }
+
+            } else {
+                console.log(invalid('\nI cannot find any movies (or television shows!) with the title "' + title + '" right now.'));
+            }
+
+            })
+            // catch errors
+            .catch(function (error) {
+                console.log(invalid(error));
+            });
     },
     // read RANDOM.txt
     random: function() {
@@ -135,4 +175,4 @@ var command = {
     },
 };
 
-command.concert();
+command.movie();
