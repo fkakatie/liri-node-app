@@ -34,19 +34,19 @@ To properly use this Node app, you will need to request a [Spotify key](https://
 ### How to Use: ###
 
 1. **Initialize Liri.**
-	- After cloning or downloading the [liri-node-app repo](https://github.com/fkakatie/liri-node-app) and creating an `.env` file with your API keys, enter `node liri` in the command line to call Liri into action.
+  - After cloning or downloading the [liri-node-app repo](https://github.com/fkakatie/liri-node-app) and creating an `.env` file with your API keys, enter `node liri` in the command line to call Liri into action.
 	
 2. **Give a command.**
-	- When prompted, give Liri your command. Your options include:
-            - Find concert dates
-            - Search for a song
-            - Look up a movie
+  - When prompted, give Liri your command. Your options include:
+    - Find concert dates
+    - Search for a song
+    - Look up a movie
 	
 3. **Enter your query.**
-	- After giving your command, let Liri know specifically which concert, song, or movie you would like to search for.
+  - After giving your command, let Liri know specifically which concert, song, or movie you would like to search for.
 	
 4. **Read and repeat!**
-	- Liri will provide your search results right in the terminal and ask if you'd like to search for something else, as long as you'd like! 
+  - Liri will provide your search results right in the terminal and ask if you'd like to search for something else, as long as you'd like! 
 
 ## Where users can get help with this project ## 
 
