@@ -18,8 +18,7 @@ var fs = require('fs');
 var moment = require('moment');
 
 var Spotify = require('node-spotify-api');
-var bandsintown = require('bandsintown')('"' + keys.bandsintown + '"');
-var Omdb = require('omdb');
+var spotify = new Spotify(keys.spotify);
 
 // chalk setup
 var invalid = chalk.red;
@@ -28,9 +27,6 @@ var divider = chalk.gray;
 var inverse = chalk.inverse;
 
 var divLine = '-----------------------------------';
-
-var spotify = new Spotify(keys.spotify);
-
 
 var userInput = process.argv[2];
 // console.log(userInput);
@@ -81,16 +77,35 @@ var command = {
                 console.log(heading('\nUPCOMING ' + chalk.bold(artist.toUpperCase()) + ' CONCERTS:'));
                 console.log(divider(divLine));
 
-                for (var j = 0; j < 5; j++) {
+                if (bandData.length > 5) {
 
-                    var concert = bandData[j];
+                    for (var j = 0; j < 5; j++) {
 
-                    var concertDate = moment(concert.datetime).format('MM/DD/YYYY');
+                        var concert = bandData[j];
 
-                    console.log(
-                        concertDate + divider(' | ') + 
-                        concert.venue.city + ', ' + concert.venue.region + ' (' +
-                        concert.venue.name + ')');
+                        var concertDate = moment(concert.datetime).format('MM/DD/YYYY');
+
+                        console.log(
+                            concertDate + divider(' | ') + 
+                            concert.venue.city + ', ' + concert.venue.region + ' (' +
+                            concert.venue.name + ')');
+
+                    }
+
+                } else {
+
+                    for (var j = 0; j < bandData.length; j++) {
+
+                        var concert = bandData[j];
+
+                        var concertDate = moment(concert.datetime).format('MM/DD/YYYY');
+
+                        console.log(
+                            concertDate + divider(' | ') + 
+                            concert.venue.city + ', ' + concert.venue.region + ' (' +
+                            concert.venue.name + ')');
+
+                    }
 
                 }
 
@@ -104,10 +119,45 @@ var command = {
     },
     // search SPOTIFY for song info
     song: function() {
-        console.log('artist(s)');
-        console.log('song name');
-        console.log('album');
-        console.log('preview');
+
+        var track = userInput;
+
+        spotify
+        .search({ 
+            type: 'track', 
+            query: track,
+            limit: 3 
+        }).then(function(trackData) {
+
+            var trackData = trackData.tracks.items;
+
+            if (trackData > 0) {
+
+                console.log(
+                    heading('\n' + chalk.bold(track.toUpperCase()) + ' TRACKS:'));
+
+                for (var l = 0; l < trackData.length; l++) {
+
+                    // var trackData = trackData.tracks.items[l];
+                    console.log(divider(divLine));
+                    console.log(divider(' TRACK: ') + trackData[l].name); 
+                    console.log(divider('ARTIST: ') + trackData[l].artists[0].name);
+                    console.log(divider(' ALBUM: ') + trackData[l].album.name);
+                    console.log(divider('LISTEN: ') + chalk.italic(trackData[l].external_urls.spotify));
+
+                }; 
+
+            } else {
+
+                console.log(invalid('\nIt seems like ' + track + ' is not actually a song.'));
+
+            }
+
+        }).catch(function(err) {
+
+            console.log(err);
+
+        });
     },
     // search OMDB for movie info
     movie: function() {
@@ -116,12 +166,17 @@ var command = {
                 
         var titleSplit = title.split(' ').join('+');
 
+        console.log('http://www.omdbapi.com/?apikey=' + keys.omdb.id + '&t=' + titleSplit);
+
         axios.get('http://www.omdbapi.com/?apikey=' + keys.omdb.id + '&t=' + titleSplit)
-            .then(function (movieData) {
+            .then(function ({data}) {
 
-                if (movieData.Title) {
+                // var test = Object.keys(movieData);
+                console.log(data.Title);
 
-                var movie = movieData.data;
+                var movie = data;
+
+                if (movie.Title) {
 
                 console.log(
                     '\n' + heading(movie.Title.toUpperCase()) + 
@@ -175,4 +230,4 @@ var command = {
     },
 };
 
-command.movie();
+command.song();
