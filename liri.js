@@ -28,7 +28,7 @@ var heading = chalk.blue;
 var divider = chalk.gray;
 var inverse = chalk.inverse;
 
-var divLine = '-----------------------------------------------';
+var divLine = '---------------------------------------------------------';
 
 var userInput = process.argv[2];
 // console.log(userInput);
@@ -66,7 +66,10 @@ var command = {
         artistSplit = artistSplit.join('');
 
         // use request to search bandsInTown API
-        request('https://rest.bandsintown.com/artists/' + artistSplit + '/events?app_id=' + keys.bandsintown.id + '&date=upcoming', function (error, response, bandData) {
+        request(
+            'https://rest.bandsintown.com/artists/' + artistSplit + 
+            '/events?app_id=' + keys.bandsintown.id + 
+            '&date=upcoming', function (error, response, bandData) {
             
             // catch errors
             if (error || response.statusCode !== 200) {
@@ -93,11 +96,20 @@ var command = {
                         // convert date using moment.js
                         var concertDate = moment(concert.datetime).format('MM/DD/YYYY');
 
-                        // print upcoming concerts to console
-                        console.log(
-                            concertDate + divider(' | ') + 
-                            concert.venue.city + ', ' + concert.venue.region + ' (' +
-                            concert.venue.name + ')');
+                        // only print location data that exists
+                        if (concert.venue.region) {
+                            // print upcoming concerts to console
+                            console.log(
+                                concertDate + divider(' | ') + 
+                                concert.venue.city + ', ' + concert.venue.region + ' (' +
+                                concert.venue.name + ')');
+                        } else {
+                            // print upcoming concerts to console
+                            console.log(
+                                concertDate + divider(' | ') + 
+                                concert.venue.city + 
+                                ' (' + concert.venue.name + ')');
+                        };
 
                     };
                 // if there are LESS than five upcoming concerts...
@@ -111,11 +123,21 @@ var command = {
                         // convert date using moment.js
                         var concertDate = moment(concert.datetime).format('MM/DD/YYYY');
 
-                        console.log(
-                            concertDate + divider(' | ') + 
-                            concert.venue.city + ', ' + concert.venue.region + ' (' +
-                            concert.venue.name + ')');
-
+                        // only print location data that exists
+                        if (concert.venue.region) {
+                            // print upcoming concerts to console
+                            console.log(
+                                concertDate + divider(' | ') + 
+                                concert.venue.city + ', ' + concert.venue.region + ' (' +
+                                concert.venue.name + ')');
+                        } else {
+                            // print upcoming concerts to console
+                            console.log(
+                                concertDate + divider(' | ') + 
+                                concert.venue.city + 
+                                ' (' + concert.venue.name + ')');
+                        };
+                        
                     };
 
                 };
@@ -195,7 +217,7 @@ var command = {
                 divider(' (' + movie.Year + ')'));
             console.log(movie.Plot);
 
-            console.log(divider(divLine + divLine));
+            console.log(divider(divLine));
 
             console.log(divider('STARRING: ') + movie.Actors);
             console.log(divider('PRODUCED IN: ') + movie.Country);
@@ -229,7 +251,6 @@ var command = {
             console.log(invalid(error));
         });
     },
-
     // read RANDOM.txt
     random: function() {
         
@@ -264,4 +285,6 @@ var command = {
 // // Use user feedback for... whatever!!
 // });
 
-command.movie();
+command.concert();
+// command.song();
+// command.movie();
