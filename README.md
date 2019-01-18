@@ -38,9 +38,9 @@ To properly use this Node app, you will need to request a [Spotify key](https://
 	
 2. **Give a command.**
 	- When prompted, give Liri your command. Your options include:
-    - Find concert dates
-    - Search for a song
-    - Look up a movie
+            - Find concert dates
+            - Search for a song
+            - Look up a movie
 	
 3. **Enter your query.**
 	- After giving your command, let Liri know specifically which concert, song, or movie you would like to search for.
