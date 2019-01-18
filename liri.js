@@ -10,15 +10,17 @@ require('dotenv').config();
 
 var keys = require('./keys.js');
 
-var chalk = require('chalk');
-
 var request = require('request');
 var axios = require('axios')
-var fs = require('fs');
 var moment = require('moment');
+
+var inquirer = require('inquirer');
+var fs = require('fs');
 
 var Spotify = require('node-spotify-api');
 var spotify = new Spotify(keys.spotify);
+
+var chalk = require('chalk');
 
 // chalk setup
 var invalid = chalk.red;
@@ -26,7 +28,7 @@ var heading = chalk.blue;
 var divider = chalk.gray;
 var inverse = chalk.inverse;
 
-var divLine = '-----------------------------------';
+var divLine = '-----------------------------------------------';
 
 var userInput = process.argv[2];
 // console.log(userInput);
@@ -37,7 +39,7 @@ var command = {
         
         var artist = userInput;
         
-        // replacing any special characters
+        // replacing any special characters as required by bandsInTown API
         var artistSplit = artist.split('');
   
         for (var i = 0; i < artistSplit.length; i++) {
@@ -62,42 +64,51 @@ var command = {
         };
 
         artistSplit = artistSplit.join('');
-        
+
+        // use request to search bandsInTown API
         request('https://rest.bandsintown.com/artists/' + artistSplit + '/events?app_id=' + keys.bandsintown.id + '&date=upcoming', function (error, response, bandData) {
             
             // catch errors
             if (error || response.statusCode !== 200) {
                 return console.log(invalid(error));
-            } 
+            };
 
-            if (bandData.length > 3) {
+            // if data from bandsInTown API is returned...
+            if (!bandData.includes('warn=Not found')) {
+
                 // convert bandData to JSON object
                 var bandData = JSON.parse(bandData);
 
+                // print title to console
                 console.log(heading('\nUPCOMING ' + chalk.bold(artist.toUpperCase()) + ' CONCERTS:'));
                 console.log(divider(divLine));
 
+                // if there are more than five upcoming concerts...
                 if (bandData.length > 5) {
 
                     for (var j = 0; j < 5; j++) {
 
                         var concert = bandData[j];
 
+                        // convert date using moment.js
                         var concertDate = moment(concert.datetime).format('MM/DD/YYYY');
 
+                        // print upcoming concerts to console
                         console.log(
                             concertDate + divider(' | ') + 
                             concert.venue.city + ', ' + concert.venue.region + ' (' +
                             concert.venue.name + ')');
 
-                    }
-
+                    };
+                // if there are LESS than five upcoming concerts...
                 } else {
 
+                    // print all upcoming concerts to the console
                     for (var j = 0; j < bandData.length; j++) {
 
                         var concert = bandData[j];
 
+                        // convert date using moment.js
                         var concertDate = moment(concert.datetime).format('MM/DD/YYYY');
 
                         console.log(
@@ -105,14 +116,15 @@ var command = {
                             concert.venue.city + ', ' + concert.venue.region + ' (' +
                             concert.venue.name + ')');
 
-                    }
+                    };
 
-                }
+                };
 
             } else {
-
-                console.log(invalid('\nIt looks like ' + artist + ' is not on tour right now.'));
-            }
+                
+                // no data is returned from bandsInTown API
+                console.log(invalid('\nIt looks like "' + artist + '" is not on tour right now.'));
+            };
 
         });
 
@@ -125,20 +137,21 @@ var command = {
         spotify
         .search({ 
             type: 'track', 
-            query: track,
+            query: track, // uses userinput for query
             limit: 3 
         }).then(function(trackData) {
 
             var trackData = trackData.tracks.items;
 
-            if (trackData > 0) {
+            // if data is returned from spotify api
+            if (trackData.length !== 0) {
 
-                console.log(
-                    heading('\n' + chalk.bold(track.toUpperCase()) + ' TRACKS:'));
+                // print title to console
+                console.log(heading('\n' + chalk.bold(track.toUpperCase()) + ' TRACKS:'));
 
                 for (var l = 0; l < trackData.length; l++) {
 
-                    // var trackData = trackData.tracks.items[l];
+                    // print track data to console
                     console.log(divider(divLine));
                     console.log(divider(' TRACK: ') + trackData[l].name); 
                     console.log(divider('ARTIST: ') + trackData[l].artists[0].name);
@@ -146,16 +159,17 @@ var command = {
                     console.log(divider('LISTEN: ') + chalk.italic(trackData[l].external_urls.spotify));
 
                 }; 
-
+            // no data is returned from spotify api
             } else {
 
-                console.log(invalid('\nIt seems like ' + track + ' is not actually a song.'));
+                console.log(invalid('\nIt seems like "' + track + '" is not actually a song.'));
 
-            }
+            };
 
+        // catch errors using promise
         }).catch(function(err) {
 
-            console.log(err);
+            console.log(invalid(err));
 
         });
     },
@@ -166,29 +180,28 @@ var command = {
                 
         var titleSplit = title.split(' ').join('+');
 
-        console.log('http://www.omdbapi.com/?apikey=' + keys.omdb.id + '&t=' + titleSplit);
+        // search omdbi api using axios
+        axios
+        .get('http://www.omdbapi.com/?apikey=' + keys.omdb.id + '&t=' + titleSplit)
+        .then(function ({data}) {
 
-        axios.get('http://www.omdbapi.com/?apikey=' + keys.omdb.id + '&t=' + titleSplit)
-            .then(function ({data}) {
+            var movie = data;
 
-                // var test = Object.keys(movieData);
-                console.log(data.Title);
+            if (movie.Title) {
 
-                var movie = data;
+            // print movie data to console
+            console.log(
+                '\n' + heading(movie.Title.toUpperCase()) + 
+                divider(' (' + movie.Year + ')'));
+            console.log(movie.Plot);
 
-                if (movie.Title) {
+            console.log(divider(divLine + divLine));
 
-                console.log(
-                    '\n' + heading(movie.Title.toUpperCase()) + 
-                    divider(' (' + movie.Year + ')'));
-                console.log(movie.Plot);
+            console.log(divider('STARRING: ') + movie.Actors);
+            console.log(divider('PRODUCED IN: ') + movie.Country);
+            console.log(divider('LANGUAGE(S): ') + movie.Language);
 
-                console.log(divider(divLine + divLine));
-
-                console.log(divider('STARRING: ') + movie.Actors);
-                console.log(divider('PRODUCED IN: ') + movie.Country);
-                console.log(divider('LANGUAGE(S): ') + movie.Language);
-
+                // only print ratings data that exists
                 if (movie.Ratings[1] && movie.Ratings[0]) {
                     console.log(divider('RATINGS: ') + 'Rotten Tomatoes: ' + 
                         movie.Ratings[1].Value + 
@@ -203,16 +216,20 @@ var command = {
                         divider('RATING: ') + 'IMDb: ' + movie.Ratings[0].Value);
                 }
 
-            } else {
+            } 
+            // if no data is returned from omdb api
+            else {
                 console.log(invalid('\nI cannot find any movies (or television shows!) with the title "' + title + '" right now.'));
-            }
+            };
 
-            })
-            // catch errors
-            .catch(function (error) {
-                console.log(invalid(error));
-            });
+        })
+        
+        // catch errors
+        .catch(function (error) {
+            console.log(invalid(error));
+        });
     },
+
     // read RANDOM.txt
     random: function() {
         
@@ -221,13 +238,30 @@ var command = {
             // catch errors
             if (error) {
               return console.log(error);
-            }
+            };
           
             console.log(data);
           
         });
 
-    },
+    }
 };
 
-command.song();
+// inquirer
+// .prompt([
+//     {
+//         name: 'name',
+//         type: 'input',
+//         message: 'Player Name:'
+//     }, {
+//         name: 'position',
+//         type: 'list',
+//         message: 'Player Position:',
+//         choices: ['Guard', 'Forward', 'Center']
+//     }
+// ])
+// .then(function(answers) {
+// // Use user feedback for... whatever!!
+// });
+
+command.movie();
