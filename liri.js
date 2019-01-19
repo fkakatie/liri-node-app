@@ -3,15 +3,14 @@ require('dotenv').config();
 var keys = require('./keys.js');
 
 // install packages
+var inquirer = require('inquirer');
 var request = require('request');
 var axios = require('axios');
 var Spotify = require('node-spotify-api');
 var spotify = new Spotify(keys.spotify);
-
-var moment = require('moment');
-var inquirer = require('inquirer');
 var fs = require('fs');
 
+var moment = require('moment');
 var chalk = require('chalk');
 
 // chalk setup

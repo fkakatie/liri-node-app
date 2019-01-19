@@ -12,7 +12,7 @@ Meet **Liri**, a Language Interpretation and Recognition Interface. Ask Liri to 
 
 ## What this project does ##
 
-This project requires [`npm`](https://www.npmjs.com) to install third party libraries by using the command line. [`dotenv`]() is used to load `API keys` from an `.env` file. [`Inquirer`](https://www.npmjs.com/package/inquirer) is used to collect user input. Based on the user input, Liri will use [`Request`](https://www.npmjs.com/package/request) to make an HTTP request to the Bands in Town API, the [`Node Spotify API`](https://www.npmjs.com/package/node-spotify-api), and [`Axios`](https://www.npmjs.com/package/axios) to make an HTTP request to the OMDb API. Dates are parsed and manipulated using [`moment`](https://www.npmjs.com/package/moment). Data logged in the terminal is styled with [`Chalk`](https://www.npmjs.com/package/chalk) and the ASCII art is made using Nick Miner's FIGlet font, [Roman](http://www.figlet.org/fontdb_example.cgi?font=roman.flf).
+This project requires [`npm`](https://www.npmjs.com) to install third party libraries by using the command line. [`dotenv`]() is used to load `API keys` from an `.env` file. [`Inquirer`](https://www.npmjs.com/package/inquirer) is used to collect user input. Based on the user input, Liri will use [`Request`](https://www.npmjs.com/package/request) to make an HTTP request to the Bands in Town API, the [`Node Spotify API`](https://www.npmjs.com/package/node-spotify-api), and [`Axios`](https://www.npmjs.com/package/axios) to make an HTTP request to the OMDb API. Dates are parsed and manipulated using [`moment`](https://www.npmjs.com/package/moment). Data logged in the terminal is styled with [`Chalk`](https://www.npmjs.com/package/chalk) and the ASCII art is made using Nick Miner's FIGlet font, [Roman](http://www.figlet.org/fontdb_example.cgi?font=roman.flf). Search results are logged in a `.txt` file using [`fs`](https://nodejs.org/api/fs.html).
 
 ## How users can get started with this project ## 
 
@@ -41,11 +41,15 @@ To properly use this Node app, you will need to request a [Spotify key](https://
     - Find concert dates
     - Search for a song
     - Look up a movie
+    - Another function
 	
 3. **Enter your query.**
-  - After giving your command, let Liri know specifically which concert, song, or movie you would like to search for.
-	
-4. **Read and repeat!**
+  - After giving your command, let Liri know specifically which concert, song, movie, or function you would like to search for.
+
+4. **Log search results.**
+  - All valid search results are entered in the `log.txt` file.
+
+5. **Read and repeat!**
   - Liri will provide your search results right in the terminal and ask if you'd like to search for something else, as long as you'd like! 
 
 ## Where users can get help with this project ## 
