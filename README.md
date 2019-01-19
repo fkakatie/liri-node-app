@@ -54,7 +54,7 @@ To properly use this Node app, you will need to request a [Spotify key](https://
 
 ## Where users can get help with this project ## 
 
-If you have any questions about this project, visit my portfolio and [send me a message](https://fkakatie.github.io/responsive-portfolio/contact.html).
+A [video tutorial](https://drive.google.com/file/d/1m0snmoUbZv1pIUkaG7g23EM7dc8od7YP/view) is available, but if you have any further questions about this project, visit my portfolio and [send me a message](https://fkakatie.github.io/responsive-portfolio/contact.html).
 
 ## Who maintains this project ##
 
