@@ -1,36 +1,94 @@
-// LIRI HOMEWORK
-    // IMPORT PACKAGES
-    // GET KEYS
-
-    // COLLECT INPUT FROM USER
-    // GET INFO FROM API
-    // LOG INFO TO CONSOLE
-
+// require api keys from .env file
 require('dotenv').config();
-
 var keys = require('./keys.js');
 
+// install packages
 var request = require('request');
-var axios = require('axios')
-var moment = require('moment');
-
-var inquirer = require('inquirer');
-var fs = require('fs');
-
+var axios = require('axios');
 var Spotify = require('node-spotify-api');
 var spotify = new Spotify(keys.spotify);
+
+var moment = require('moment');
+var inquirer = require('inquirer');
+var fs = require('fs');
 
 var chalk = require('chalk');
 
 // chalk setup
 var invalid = chalk.red;
-var heading = chalk.magenta;
+var heading = chalk.cyan;
 var divider = chalk.gray;
 var inverse = chalk.inverse;
 
+var now;
+var searchTerm;
+var logObject = [];
 var divLine = '-------------------------------------------------';
 
-var searchTerm;
+// call liri to command line
+function initLiri() {
+
+    console.log("\n ooooo   ooooo  o8o         ooooo o8o                      " + heading("ooooo         o8o            o8o     "));
+    console.log(" `888'   `888'  `*'         `888' `YP                      " + heading("`888'         `*'            `*'     "));
+    console.log("  888     888  oooo          888   '  ooo. .oo.  .oo.      " + heading(" 888         oooo  oooo d8b oooo     "));
+    console.log("  888ooooo888  `888          888      `888P`Y88bP`Y88b     " + heading(" 888         `888  `888'`8P `888     "));
+    console.log("  888     888   888          888       888   888   888     " + heading(" 888          888   888      888     "));
+    console.log("  888     888   888  .o.     888       888   888   888     " + heading(" 888       o  888   888      888 ") + " .o.");
+    console.log(" o888o   o888o o888o Y8P    o888o     o888o o888o o888o    " + heading("o888ooooood8 o888o d888b    o888o") + " Y8P");
+    console.log(divider(divLine + divLine));
+
+    liriInquire();
+    
+};
+
+// collect user input
+function liriInquire() {
+
+    inquirer
+    .prompt([
+        {
+            name: 'command',
+            type: 'list',
+            message: 'What would you like to do?',
+            choices: ['Find a band on tour', 'Search for a song', 'Look up a movie', 'Another function']
+        }, {
+            name: 'searchTerm',
+            type: 'input',
+            message: 'Which one?',
+            validate: function(value) {
+                if (value.trim().length == 0) {
+                  return false;
+                }
+                return true;
+            }
+        }
+    ])
+    .then(function(inquiry) {
+
+        now = moment().format('ll LTS');
+    
+        var command = inquiry.command;
+        searchTerm = inquiry.searchTerm.trim();
+
+        switch (command) {
+            case 'Find a band on tour':
+                concert(searchTerm);
+                break;
+            case 'Search for a song':
+                song(searchTerm);
+                break;
+            case 'Look up a movie':
+                movie(searchTerm);
+                break;
+            case 'Another function':
+                random(searchTerm);
+            default:
+                break;
+        };
+        
+    });
+
+};
 
 // search BANDSINTOWN for concert info
 function concert() {
@@ -41,6 +99,7 @@ function concert() {
     var artistSplit = artist.split('');
 
     for (var i = 0; i < artistSplit.length; i++) {
+        
         switch (artistSplit[i]) {
         case '/':
             artistSplit[i] = '%252F';
@@ -71,11 +130,12 @@ function concert() {
         
         // catch errors
         if (error || response.statusCode !== 200) {
-            return console.log(invalid(error));
+            console.log(inverse(error));
+            reRun();
         };
 
         // if data from bandsInTown API is returned...
-        if (!bandData.includes('warn=Not found')) {
+        if (!bandData.includes('warn=Not found') && bandData.length > 3) {
 
             // convert bandData to JSON object
             var bandData = JSON.parse(bandData);
@@ -83,6 +143,8 @@ function concert() {
             // print title to console
             console.log(heading('\nUPCOMING ' + chalk.bold(artist.toUpperCase()) + ' CONCERTS:'));
             console.log(divider(divLine));
+
+            logObject.push('\r\r' + artist.toUpperCase() + ' CONCERT SEARCH AT ' + now);
 
             // if there are more than five upcoming concerts...
             if (bandData.length > 5) {
@@ -101,15 +163,33 @@ function concert() {
                             concertDate + divider(' | ') + 
                             concert.venue.city + ', ' + concert.venue.region + ' (' +
                             concert.venue.name + ')');
+
+                        logObject.push(
+                            '\rdate: ' + concertDate,
+                            ' city: ' + concert.venue.city,
+                            ' region: ' + concert.venue.region,
+                            ' venue: ' + concert.venue.name
+                        );
+
                     } else {
                         // print upcoming concerts to console
                         console.log(
                             concertDate + divider(' | ') + 
                             concert.venue.city + 
                             ' (' + concert.venue.name + ')');
+
+                        logObject.push(
+                            '\rdate: ' + concertDate,
+                            ' city: ' + concert.venue.city,
+                            ' venue: ' + concert.venue.name
+                        );
+
                     };
 
                 };
+
+            logData(logObject);
+
             // if there are LESS than five upcoming concerts...
             } else {
 
@@ -128,22 +208,42 @@ function concert() {
                             concertDate + divider(' | ') + 
                             concert.venue.city + ', ' + concert.venue.region + ' (' +
                             concert.venue.name + ')');
+
+                        logObject.push(
+                            '\rdate: ' + concertDate,
+                            ' city: ' + concert.venue.city,
+                            ' region: ' + concert.venue.region,
+                            ' venue: ' + concert.venue.name
+                        );
+
                     } else {
                         // print upcoming concerts to console
                         console.log(
                             concertDate + divider(' | ') + 
                             concert.venue.city + 
                             ' (' + concert.venue.name + ')');
+
+                        logObject.push(
+                            '\rdate: ' + concertDate,
+                            ' city: ' + concert.venue.city,
+                            ' venue: ' + concert.venue.name
+                        );
+
                     };
 
                 };
 
+                logData(logObject);
+
             };
 
-        } else {
-            
-            // no data is returned from bandsInTown API
+        } 
+
+        // no data is returned from bandsInTown API
+        else {
+
             console.log(invalid('\nIt looks like "' + artist + '" is not on tour right now.'));
+
         };
 
         reRun();
@@ -172,6 +272,8 @@ function song() {
             // print title to console
             console.log(heading('\n' + chalk.bold(track.toUpperCase()) + ' TRACKS:'));
 
+            logObject.push('\r\r' + track.toUpperCase() + ' SONG SEARCH AT ' + now);
+
             for (var l = 0; l < trackData.length; l++) {
 
                 // print track data to console
@@ -181,7 +283,17 @@ function song() {
                 console.log(divider(' ALBUM: ') + trackData[l].album.name);
                 console.log(divider('LISTEN: ') + chalk.italic(trackData[l].external_urls.spotify));
 
+                logObject.push(
+                    '\rtrack: ' + trackData[l].name,
+                    ' artist: ' + trackData[l].artists[0].name,
+                    ' album: ' + trackData[l].album.name,
+                    ' preview: ' + trackData[l].external_urls.spotify
+                );
+
             }; 
+
+            logData(logObject);
+
         // no data is returned from spotify api
         } else {
 
@@ -193,7 +305,7 @@ function song() {
 
     // catch errors using promise
     }).catch(function(err) {
-        console.log(invalid(err));
+        console.log(inverse(err));
         reRun();
     });
 };
@@ -214,17 +326,19 @@ function movie() {
 
         if (movie.Title) {
 
-        // print movie data to console
-        console.log(
-            '\n' + heading(movie.Title.toUpperCase()) + 
-            divider(' (' + movie.Year + ')'));
-        console.log(movie.Plot);
+            // print movie data to console
+            console.log(
+                '\n' + heading(movie.Title.toUpperCase()) + 
+                divider(' (' + movie.Year + ')'));
+            console.log(movie.Plot);
 
-        console.log(divider(divLine));
+            console.log(divider(divLine));
 
-        console.log(divider('STARRING: ') + movie.Actors);
-        console.log(divider('PRODUCED IN: ') + movie.Country);
-        console.log(divider('LANGUAGE(S): ') + movie.Language);
+            logObject.push('\r\r' + movie.Title.toUpperCase() + ' MOVIE SEARCH AT ' + now);
+
+            console.log(divider('STARRING: ') + movie.Actors);
+            console.log(divider('PRODUCED IN: ') + movie.Country);
+            console.log(divider('LANGUAGE(S): ') + movie.Language);
 
             // only print ratings data that exists
             if (movie.Ratings[1] && movie.Ratings[0]) {
@@ -239,12 +353,25 @@ function movie() {
             } else if (movie.Ratings[0]) {
                 console.log(
                     divider('RATING: ') + 'IMDb: ' + movie.Ratings[0].Value);
-            }
+            };
+
+            logObject.push(
+                '\rplot: ' + movie.Plot,
+                '\rcast: ' + movie.Actors,
+                '\ryear: ' +  movie.Year,
+                ' country: ' + movie.Country,
+                ' language(s): ' + movie.Language
+            );
+
+            logData(logObject);
 
         } 
+
         // if no data is returned from omdb api
         else {
+
             console.log(invalid('\nI cannot find any movies (or television shows!) with the title "' + title + '" right now.'));
+
         };
 
         reRun();
@@ -253,87 +380,60 @@ function movie() {
     
     // catch errors
     .catch(function (error) {
-        console.log(invalid(error));
+        console.log(inverse(error));
         reRun();
     });
 
 };
 
 // read RANDOM.txt
-// random: function() {
-    
-//     fs.readFile("random.txt", "utf8", function(error, data) {
+function random() {
 
-//         // catch errors
-//         if (error) {
-//           return console.log(error);
-//         };
+    console.log(invalid('\nI\'m not sure about "' + searchTerm + '" but what about this...'));
+
+    var commandArray = [song, movie];
+
+    var commandIndex = parseInt(Math.round(Math.random()));
+    
+    fs.readFile("random.txt", "utf8", function(error, data) {
+
+        // catch errors
+        if (error) {
+          return console.log(inverse(error));
+        };
         
-//         console.log(data);
-        
-//     });
+        var txtArray = data.split(', ');
 
-// }
-// };
+        var randomNum = parseInt(Math.floor(Math.random() * txtArray.length));
 
-// call liri to command line
-function initLiri() {
+        searchTerm = txtArray[randomNum];
 
-    console.log("\n ooooo   ooooo  o8o         ooooo o8o                      " + heading("ooooo         o8o            o8o     "));
-    console.log(" `888'   `888'  `*'         `888' `YP                      " + heading("`888'         `*'            `*'     "));
-    console.log("  888     888  oooo          888   '  ooo. .oo.  .oo.      " + heading(" 888         oooo  oooo d8b oooo     "));
-    console.log("  888ooooo888  `888          888      `888P`Y88bP`Y88b     " + heading(" 888         `888  `888'`8P `888     "));
-    console.log("  888     888   888          888       888   888   888     " + heading(" 888          888   888      888     "));
-    console.log("  888     888   888  .o.     888       888   888   888     " + heading(" 888       o  888   888      888 ") + " .o.");
-    console.log(" o888o   o888o o888o Y8P    o888o     o888o o888o o888o    " + heading("o888ooooood8 o888o d888b    o888o") + " Y8P");
-    console.log(divider(divLine + divLine));
-
-    liriInquire();
-    
-};
-
-// collect user input
-function liriInquire() {
-
-    inquirer
-    .prompt([
-        {
-            name: 'command',
-            type: 'list',
-            message: 'What would you like to do?',
-            choices: ['Find concert dates', 'Search for a song', 'Look up a movie', 'Surprise me']
-        }, {
-            name: 'searchTerm',
-            type: 'input',
-            message: 'Which one?',
-            validate: function(value) {
-                if (value.trim().length == 0) {
-                  return false;
-                }
-                return true;
-            }
-        }
-    ])
-    .then(function(inquiry) {
-    
-        var command = inquiry.command;
-        searchTerm = inquiry.searchTerm.trim();
-
-        switch (command) {
-            case 'Find concert dates':
-                concert(searchTerm);
-                break;
-            case 'Search for a song':
-                song(searchTerm);
-                break;
-            case 'Look up a movie':
-                movie(searchTerm);
-                break;
-            default:
-                break;
-        }
+        commandArray[commandIndex](searchTerm);
         
     });
+
+};
+
+// append data to log
+function logData() {
+
+    fs.appendFile("log.txt", logObject, function(err) {
+
+        // catch errors
+        if (err) {
+            console.log(inverse(err));
+        };
+
+        clearObj();
+    
+    });
+
+};
+
+// clear logObject 
+function clearObj() {
+
+    logObject = [];
 
 };
 
@@ -352,7 +452,7 @@ function reRun() {
     ])
     .then(function(result) {
 
-        result.rerun ? liriInquire() : console.log('\nOkay! You can call me again by typing ' + heading('node liri') + ' in the command line.');
+        result.rerun ? liriInquire() : console.log('\nOkay. You can call me again by typing ' + heading('node liri') + ' in the command line.');
 
     });
 
